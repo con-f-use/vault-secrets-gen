@@ -55,19 +55,21 @@ you use the published checksums to verify integrity.
 
 In order to upgrade, you can repeat the decompress, move and register steps with the new version:
 
-    ```sh
-    $ export SHA256=$(shasum -a 256 "/etc/vault/plugins/vault-secrets-gen_vX.X.X" | cut -d' ' -f1)
-    $ mv vault-secrets-gen_vX.X.X <vault-plugin-directory>/
-    $ vault plugin register \
-        -sha256="${SHA256}" \
-        -command="vault-secrets-gen_vX.X.X" \
-        -version="vX.X.X" \
-        secret secrets-gen
-    $ vault secrets tune -plugin-version=v1.0.8 secrets-gen
-    $ vault plugin reload -plugin secrets-gen
-    ```
+```sh
+$ export NEW_VERSION=vX.X.X;  # target version you wish to upgrade to (and have downloaded)
+$ export SHA256=$(shasum -a 256 "/etc/vault/plugins/vault-secrets-gen_${NEW_VERSION}" | cut -d' ' -f1)
+$ mv vault-secrets-gen_${NEW_VERSION} /etc/vault/plugins/
+$ vault plugin register \
+  -sha256="${SHA256}" \
+  -command="vault-secrets-gen_${NEW_VERSION}" \
+  -version="${NEW_VERSION}" \
+  secret secrets-gen
+$ vault secrets tune -plugin-version="${NEW_VERSION}" secrets-gen
+$ vault secrets list -detailed
+  # "version" should be different from "running version" in resulting listing
+$ vault plugin reload -plugin secrets-gen
+```
 
-Where `vX.X.X` deontes the target version, you wish to upgrade to.
 Note that the `-version` option is only supported in vault server versions staring from `1.12.0`,
 omit it for earlier versions.
 
